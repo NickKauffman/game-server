@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Controller</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { background: #111; color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; gap: 16px; }
+    input { font-size: 32px; padding: 12px; border-radius: 8px; border: none; text-align: center; width: 160px; text-transform: uppercase; }
+    input[type="text"]:last-of-type { width: 220px; font-size: 24px; }
+    button { font-size: 28px; padding: 20px 40px; border-radius: 12px; border: none; background: #7c3aed; color: white; cursor: pointer; width: 80vw; max-width: 300px; }
+    button:active { background: #5b21b6; }
+    #buttons { display: none; flex-direction: column; gap: 16px; align-items: center; }
+    h2 { margin: 0; }
+  </style>
+</head>
+<body>
+  <div id="join-screen">
+    <h2>Enter Room Code</h2>
+    <input id="code" type="text" maxlength="4" placeholder="ABCD">
+    <h2>Your Name</h2>
+    <input id="name" type="text" placeholder="Your name">
+    <button onclick="joinRoom()">Join Game</button>
+  </div>
+
+  <div id="buttons">
+    <h2 id="welcome"></h2>
+    <button onclick="press('UP')">⬆️ Up</button>
+    <button onclick="press('DOWN')">⬇️ Down</button>
+    <button onclick="press('LEFT')">⬅️ Left</button>
+    <button onclick="press('RIGHT')">➡️ Right</button>
+    <button onclick="press('ACTION')" style="background:#16a34a">✅ Action</button>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    let roomCode = '';
+
+    function joinRoom() {
+      roomCode = document.getElementById('code').value.toUpperCase();
+      const name = document.getElementById('name').value || 'Player';
+      socket.emit('join-room', { code: roomCode, name });
+    }
+
+    socket.on('joined', ({ name }) => {
+      document.getElementById('join-screen').style.display = 'none';
+      document.getElementById('buttons').style.display = 'flex';
+      document.getElementById('welcome').textContent = '🎮 ' + name;
+    });
+
+    socket.on('error', (msg) => alert(msg));
+
+    function press(button) {
+      socket.emit('button-press', { code: roomCode, button });
+    }
+  </script>
+</body>
+</html>
